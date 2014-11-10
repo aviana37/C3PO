@@ -2,12 +2,55 @@
 
 static Grafo* _grafo=NULL;
 static MatrizesPlanetRank* _rank=NULL;
+static TipoPercurso _percursoAtual=PERCURSO_NENHUM;
 
+void Grafo_FazerPercursoProfundidade()
+{
+    if(_grafo)
+    {
+        _grafo->PercursoProfundidade();
+        _percursoAtual=PERCURSO_PROFUNDIDADE;
+    }
+}
+
+bool Grafo_Aciclico()
+{
+    return _grafo->aciclico;
+}
 bool Grafo_Carregado()
 {
     return _grafo;
 }
-int Grafo_Vertices(){return _grafo->n_vertices;}
+int Grafo_Vertices()
+{
+    return _grafo->n_vertices;
+}
+TipoPercurso Grafo_PercursoAtual()
+{
+    return _percursoAtual;
+}
+void ImprimirVertices()
+{
+    switch(_percursoAtual)
+    {
+    case PERCURSO_NENHUM:
+        printf("Nenhum percurso realizado.\n");
+        return;
+    case PERCURSO_LARGURA:
+        printf("Percurso largura:\n");
+        break;
+    case PERCURSO_PROFUNDIDADE:
+        printf("Percurso profundidade:\n");
+        break;
+    }
+
+    for(int c=0; c<_grafo->n_vertices; c++)
+    {
+        printf("v-%d\tant-%d\tdesc-%d\tterm-%d\tcor-%d\n",
+               c, _grafo->vertices[c].ant, _grafo->vertices[c].descoberta,
+               _grafo->vertices[c].termino, _grafo->vertices[c].cor);
+    }
+}
 
 void CalcularPlanetRank()
 {
@@ -49,7 +92,7 @@ void CalcularPlanetRank()
         }
 
         //Determinando valores na matriz de probabilidade aleatoria
-        for(int f=0;f<_rank->nv;f++)
+        for(int f=0; f<_rank->nv; f++)
         {
             proporcao=(float)0.1/_rank->na;
             for(int g=0; g<_rank->na; g++)
@@ -57,7 +100,7 @@ void CalcularPlanetRank()
         }
 
         //Determinando valores na matriz planet rank
-        for(int f=0;f<_rank->nv;f++)
+        for(int f=0; f<_rank->nv; f++)
         {
             for(int g=0; g<_rank->na; g++)
                 _rank->PlanetRank[g][f] = _rank->ProbPlaneta[g][f] + _rank->ProbAleatoria[g][f];
@@ -83,16 +126,16 @@ int PlanetRank(int planeta, float* chance)
                 temp[d]=0;
         }
 
-        for(int e=0;e<_rank->na;e++)
+        for(int e=0; e<_rank->na; e++)
         {
             if(_rank->PlanetRank[e][planeta]>0.1)
             {
-                for(int f=0;f<_rank->nv;f++)
+                for(int f=0; f<_rank->nv; f++)
                     temp[f]+=_rank->PlanetRank[e][f];
             }
         }
 
-        for(int g=1;g<_rank->nv;g++)
+        for(int g=1; g<_rank->nv; g++)
         {
             if(temp[g]>temp[res])
                 res=g;
@@ -227,21 +270,119 @@ int Grafo_GrauIncidencia(int vertice)
     return -1;
 }
 
-bool Grafo_FortementeConectados()
+void Grafo_ImprimirCaminho(int inicio, int atual)
 {
-    for(int f=0;f<_grafo->n_vertices;f++)
-        for(int g=0;g<_grafo->n_vertices;g++)
+    if(inicio==atual)
+        printf("%d.\n", atual);
+    else if(_grafo->vertices[atual].ant == -1)
+        printf("%d->X.\nNao existe um caminho a partir de %d a %d.\n", atual, atual, inicio);
+    else
+    {
+        printf("%d->", atual);
+        Grafo_ImprimirCaminho(inicio, _grafo->vertices[atual].ant);
+    }
+}
+void Grafo_DeterminarCaminho(int inicio, int fim)
+{
+    _grafo->PercursoLargura(inicio);
+    Grafo_ImprimirCaminho(inicio, fim);
+}
+
+bool Grafo_Direcionado()
+{
+    int c=0;
+    for(int f=0; f<_grafo->n_vertices; f++)
+        for(int g=0; g<_grafo->n_vertices; g++)
         {
             if(_grafo->matriz_adj[f][g] != _grafo->matriz_adj[g][f])
-                return false;
+                c++;
         }
-    return true;
+    if(!c || c==_grafo->n_vertices*_grafo->n_vertices)
+        return true;
+    return false;
+}
+
+int* Grafo_ComponentesFortementeConectados(int* n_componentes)
+{
+    int componentes, adj, comp_atual;
+    int* ret;
+
+    componentes = _grafo->PercursoProfundidade();
+
+    if(!Grafo_Direcionado())
+    {
+        if(componentes>1)
+            return NULL;
+    }
+
+    ret=new int[componentes];
+    Grafo* gt=new Grafo(0,NULL,0);
+    gt->n_vertices = _grafo->n_vertices;
+    gt->vertices=new Grafo::Vertice[_grafo->n_vertices];
+
+    for(int c=0; c<_grafo->n_vertices; c++)
+    {
+        _grafo->vertices[c].ProximoVerticeAdj(NULL);
+
+        while(_grafo->vertices[c].ProximoVerticeAdj(&adj))
+            gt->vertices[adj].AdicionarVerticeAdj(c);
+    }
+
+    int atual;
+    for(int c=0; c<gt->n_vertices; c++)
+        gt->vertices[c].cor = Grafo::Vertice::BRANCO;
+
+    comp_atual=0;
+    while(true)
+    {
+        atual=0;
+        while(true)
+        {
+            if(gt->vertices[atual].cor == Grafo::Vertice::BRANCO)
+                break;
+
+            if(atual>=gt->n_vertices)
+            {
+                atual=-1;
+                break;
+            }
+            atual++;
+        }
+
+        if(atual==-1)
+            break;
+
+        for(int c=0; c<_grafo->n_vertices; c++)
+        {
+            if(gt->vertices[c].cor == Grafo::Vertice::BRANCO)
+            {
+                if(_grafo->vertices[c].termino > _grafo->vertices[atual].termino)
+                    atual = c;
+            }
+        }
+
+        if(comp_atual>=componentes)
+        {
+            delete [] ret;
+            return NULL;
+        }
+
+        ret[comp_atual]=atual;
+        comp_atual++;
+
+        gt->_Profundidade_R(atual);
+    }
+
+    if(n_componentes)
+        *n_componentes=comp_atual;
+    delete gt;
+    return ret;
 }
 
 void Imprimir_ParesFConectados()
 {
-    for(int f=0;f<_grafo->n_vertices;f++)
-        for(int g=0;g<_grafo->n_vertices;g++)
+    for(int f=0; f<_grafo->n_vertices; f++)
+        for(int g=0; g<_grafo->n_vertices; g++)
         {
             if(g>f)
                 continue;

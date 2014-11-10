@@ -35,7 +35,22 @@ enum ComandoMenu
     CMENU_PR_IMPRIMIR_MAT_PLANETRANK = 1u<<22,
 };
 
-ComandoMenu MenuInicial()
+int MenuInicial();
+int MenuCarregar();
+int MenuGrafo();
+int MenuGrau();
+int MenuConexao();
+int MenuRank();
+
+void ResolverCarregar(int);
+void ResolverGrafo(int);
+void ResolverGrau(int);
+void ResolverConexao(int);
+void ResolverCiclo();
+void ResolverCaminho();
+void ResolverRank(int);
+
+int MenuInicial()
 {
     printf( "1->Carregar grafo.\n"
             "2->Sair.\n");
@@ -75,12 +90,53 @@ int MenuCarregar()
     }
     return CMENU_DESCONHECIDO;
 }
+void ResolverCarregar(int c)
+{
+    switch(c)
+    {
+    case CMENU_ESPECIFICAR:
+        char arquivo[128];
+        printf("Insira o endereco do arquivo a ser lido: ");
+        scanf("%s", arquivo);
+        CarregarGrafoBase(arquivo);
+
+        if(Grafo_Carregado())
+            printf("Grafo em \"%s\" carregado com sucesso.\n\n", arquivo);
+        else
+            printf("Arquivo nao pode ser carregado.\n\n");
+        break;
+
+    case CMENU_GALAXIAP:
+        CarregarGrafoBase(ARQUIVO_GALAXIA_MENOR);
+        if(Grafo_Carregado())
+            printf("Grafo em \"%s\" carregado com sucesso.\n\n", ARQUIVO_GALAXIA_MENOR);
+        else
+            printf("Arquivo nao pode ser carregado.\n\n");
+        break;
+
+    case CMENU_GALAXIAM:
+        CarregarGrafoBase(ARQUIVO_GALAXIA_MEDIA);
+        if(Grafo_Carregado())
+            printf("Grafo em \"%s\" carregado com sucesso.\n\n", ARQUIVO_GALAXIA_MEDIA);
+        else
+            printf("Arquivo nao pode ser carregado.\n\n");
+        break;
+
+    case CMENU_GALAXIAG:
+        CarregarGrafoBase(ARQUIVO_GALAXIA_GRANDE);
+        if(Grafo_Carregado())
+            printf("Grafo em \"%s\" carregado com sucesso.\n\n", ARQUIVO_GALAXIA_GRANDE);
+        else
+            printf("Arquivo nao pode ser carregado.\n\n");
+        break;
+    }
+}
 
 int MenuGrafo()
 {
     printf( "1->Determinar grau.\n"
-            "2->Determinar ciclos entre planetas.\n"
-            "3->Determinar caminhos mais curtos entre planetas.\n"
+            "2->Determinar se existem ciclos entre planetas.\n"
+            "3->Determinar o caminho mais curto entre planetas.\n"
             "4->Determinar se os planetas estao fortemente conectados.\n"
             "5->Planet Rank.\n"
             "6->Descarregar grafo.\n"
@@ -113,6 +169,92 @@ int MenuGrafo()
         return CMENU_SAIR;
     }
     return CMENU_DESCONHECIDO;
+}
+void ResolverGrafo(int comando)
+{
+    bool trava;
+    int c;
+    switch(comando)
+    {
+    case CMENU_GRAU:
+        trava = true;
+        while(trava)
+        {
+            c=MenuGrau();
+            printf("\n");
+
+            if(c==CMENU_DESCONHECIDO)
+                printf("Valor nao reconhecido. Tente novamente.\n\n");
+            else if(c==CMENU_SAIR)
+                trava=false;
+            else
+                ResolverGrau(c);
+
+            printf("\n");
+        }
+        break;
+    case CMENU_CICLOS:
+        ResolverCiclo();
+        printf("\n");
+        break;
+    case CMENU_CAMINHOS:
+        ResolverCaminho();
+        printf("\n");
+        break;
+    case CMENU_CONECTADOS:
+        trava=true;
+        while(trava)
+        {
+            c=MenuConexao();
+            printf("\n");
+
+            if(c==CMENU_DESCONHECIDO)
+                printf("Valor nao reconhecido. Tente novamente.\n\n");
+            else if(c==CMENU_SAIR)
+                trava=false;
+            else
+                ResolverConexao(c);
+        }
+        break;
+    case CMENU_PLANET_RANK:
+        if(!PlanetRankCalculado())
+        {
+            printf("Calculando Planet Rank. Isso pode demorar um pouco. ");
+            CalcularPlanetRank();
+            printf("Pronto.\n\n");
+        }
+        trava=true;
+        while(trava)
+        {
+            c=MenuRank();
+            printf("\n");
+            if(c==CMENU_DESCONHECIDO)
+                printf("Valor nao reconhecido. Tente novamente.\n\n");
+            else if(c==CMENU_SAIR)
+                trava=false;
+            else
+                ResolverRank(c);
+        }
+
+        break;
+
+    case CMENU_DESCARREGAR:
+        DescarregarGrafoBase();
+        printf("\nPronto.\n\n");
+        break;
+
+    case CMENU_IMPRIMIR_MAT_ADJ:
+        printf("\nMATRIZ DE ADJACENCIA\n\n");
+        ImprimirMatrizAdj();
+        printf("\n");
+        break;
+
+    case CMENU_IMPRIMIR_MAT_INC:
+        printf("\nMATRIZ DE INCIDENCIA\n\n");
+        ImprimirMatrizInc();
+        printf("\n");
+        break;
+    }
 }
 
 int MenuGrau()
@@ -237,22 +379,33 @@ void ResolverGrau(int comando)
     }
 }
 
-ComandoMenu MenuCiclo()
+void ResolverCiclo()
 {
-    printf("Nao implementado.\n");
-    return CMENU_DESCONHECIDO;
+    if(Grafo_PercursoAtual()!=PERCURSO_PROFUNDIDADE)
+        Grafo_FazerPercursoProfundidade();
+
+    if(Grafo_Aciclico())
+        printf("Grafo nao possui ciclos.\n");
+    else
+        printf("Grafo possui um ou mais ciclos.\n");
 }
-ComandoMenu MenuCaminho()
+
+void ResolverCaminho()
 {
-    printf("Nao implementado.\n");
-    return CMENU_DESCONHECIDO;
+    int a,b;
+    printf("Insira o planeta inicial: ");
+    scanf("%d", &a);
+    printf("Insira o planeta final: ");
+    scanf("%d", &b);
+
+    Grafo_DeterminarCaminho(a, b);
 }
 
 int MenuConexao()
 {
     int c;
     printf( "1->Verificar se grafo possui componentes fortemente conectados.\n"
-            "2->Imprimir pares fortemente conectados.\n"
+            "2->Imprimir arestas fortemente conectadas.\n"
             "3->Voltar\n");
     scanf("%d", &c);
 
@@ -272,15 +425,27 @@ void ResolverConexao(int comando)
     switch(comando)
     {
     case CMENU_VERIF_FCONECTADOS:
-        printf("O grafo possui %d vertices ", Grafo_Vertices());
-        if(!Grafo_FortementeConectados())
-            printf("nao ");
-        printf("fortemente conectados.\n");
-    break;
+        int n;
+        int* componentes;
+        componentes = Grafo_ComponentesFortementeConectados(&n);
+
+        if(!componentes)
+            printf("Grafo nao fortemente conectado.\n");
+        else
+        {
+            printf("Grafo possui %d componentes fortemente conectados com raizes em", n);
+            for(int c=0;c<n;c++)
+                printf(" %d", componentes[c]);
+            printf(".\n");
+        }
+
+        delete [] componentes;
+        break;
+
     case CMENU_IMPRIMIR_PARESF:
-        printf("Pares fortemente conectados:\n");
+        printf("Arestas fortemente conectadas:\n");
         Imprimir_ParesFConectados();
-    break;
+        break;
     }
 }
 
@@ -362,8 +527,6 @@ void ResolverRank(int comando)
 int main()
 {
     int c;
-    bool trava;
-
     printf("Bem-vindo ao C3PO!\n"
            "Por favor, selecione uma das opcoes abaixo:\n\n");
 
@@ -379,44 +542,7 @@ int main()
             else
             {
                 c=MenuCarregar();
-                switch(c)
-                {
-                case CMENU_ESPECIFICAR:
-                    char arquivo[128];
-                    printf("Insira o endereco do arquivo a ser lido: ");
-                    scanf("%s", arquivo);
-                    CarregarGrafoBase(arquivo);
-
-                    if(Grafo_Carregado())
-                        printf("Grafo em \"%s\" carregado com sucesso.\n\n", arquivo);
-                    else
-                        printf("Arquivo nao pode ser carregado.\n\n");
-                    break;
-
-                case CMENU_GALAXIAP:
-                    CarregarGrafoBase(ARQUIVO_GALAXIA_MENOR);
-                    if(Grafo_Carregado())
-                        printf("Grafo em \"%s\" carregado com sucesso.\n\n", ARQUIVO_GALAXIA_MENOR);
-                    else
-                        printf("Arquivo nao pode ser carregado.\n\n");
-                    break;
-
-                case CMENU_GALAXIAM:
-                    CarregarGrafoBase(ARQUIVO_GALAXIA_MEDIA);
-                    if(Grafo_Carregado())
-                        printf("Grafo em \"%s\" carregado com sucesso.\n\n", ARQUIVO_GALAXIA_MEDIA);
-                    else
-                        printf("Arquivo nao pode ser carregado.\n\n");
-                    break;
-
-                case CMENU_GALAXIAG:
-                    CarregarGrafoBase(ARQUIVO_GALAXIA_GRANDE);
-                    if(Grafo_Carregado())
-                        printf("Grafo em \"%s\" carregado com sucesso.\n\n", ARQUIVO_GALAXIA_GRANDE);
-                    else
-                        printf("Arquivo nao pode ser carregado.\n\n");
-                    break;
-                }
+                ResolverCarregar(c);
             }
         }
         else
@@ -427,92 +553,7 @@ int main()
             else if(c==CMENU_DESCONHECIDO)
                 printf("Valor nao reconhecido. Tente novamente.\n\n");
             else
-            {
-                switch(c)
-                {
-                case CMENU_GRAU:
-                    trava = true;
-                    while(trava)
-                    {
-                        c=MenuGrau();
-                        printf("\n");
-
-                        if(c==CMENU_DESCONHECIDO)
-                            printf("Valor nao reconhecido. Tente novamente.\n\n");
-                        else if(c==CMENU_SAIR)
-                            trava=false;
-                        else
-                            ResolverGrau(c);
-
-                        printf("\n");
-                    }
-                    break;
-                case CMENU_CICLOS:
-                    MenuCiclo();
-                    printf("\n");
-                    break;
-                case CMENU_CAMINHOS:
-                    MenuCaminho();
-                    printf("\n");
-                    break;
-                case CMENU_CONECTADOS:
-                    trava=true;
-                    while(trava)
-                    {
-                        c=MenuConexao();
-                        printf("\n");
-
-                        if(c==CMENU_DESCONHECIDO)
-                            printf("Valor nao reconhecido. Tente novamente.\n\n");
-                        else if(c==CMENU_SAIR)
-                            trava=false;
-                        else
-                            ResolverConexao(c);
-
-                        printf("\n");
-                    }
-                    break;
-                case CMENU_PLANET_RANK:
-                    if(!PlanetRankCalculado())
-                    {
-                        printf("Calculando Planet Rank. Isso pode demorar um pouco. ");
-                        CalcularPlanetRank();
-                        printf("Pronto.\n\n");
-                    }
-                    trava=true;
-                    while(trava)
-                    {
-                        c=MenuRank();
-                        printf("\n");
-                        if(c==CMENU_DESCONHECIDO)
-                            printf("Valor nao reconhecido. Tente novamente.\n\n");
-                        else if(c==CMENU_SAIR)
-                            trava=false;
-                        else
-                            ResolverRank(c);
-                        printf("\n");
-                    }
-
-                    break;
-
-                case CMENU_DESCARREGAR:
-                    DescarregarGrafoBase();
-                    printf("\nPronto.\n\n");
-                    break;
-
-                case CMENU_IMPRIMIR_MAT_ADJ:
-                    printf("\nMATRIZ DE ADJACENCIA\n\n");
-                    ImprimirMatrizAdj();
-                    printf("\n");
-                    break;
-
-                case CMENU_IMPRIMIR_MAT_INC:
-                    printf("\nMATRIZ DE INCIDENCIA\n\n");
-                    ImprimirMatrizInc();
-                    printf("\n");
-                    break;
-                }
-            }
+                ResolverGrafo(c);
         }
     }
 
