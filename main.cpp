@@ -1,6 +1,120 @@
 #include <stdio.h>
 #include "base.h"
 
+/*André Viana Sena de Souza - 25037
+**Projeto e Análise de Algoritmos - ECO027
+**Projeto #3 - C3PO - 10/11/2014
+**Arquivo: main.cpp
+**Descrição: Implementação de diversos métodos para a interface do usuário.
+*/
+
+/** \mainpage notitle
+    \section Projeto_e_Análise_de_Algoritmos_-_ECO027
+    André Viana Sena de Souza - 25037
+
+    <a href="relatorio.pdf" target="_blank"><b>RELATÓRIO</b></a>
+
+    Arquivos:\n
+    grafo.h, grafo.cpp;\n
+    base.h, base.cpp;\n
+    main.cpp.
+*/
+
+
+/** \file main.cpp
+    \brief Interface do usuário, implementada com os métodos de base.h.
+
+    \fn int main()
+    \brief Em um loop infinito, avalia o estado atual do grafo e retorna o menu correspondente.
+     Desaloca todos os rescursos quando o usuário aciona a opção Sair.
+
+    \enum ComandoMenu
+    \brief Define todos os possíveis valores que as funções de menu devem retornar.
+
+    \var ComandoMenu::CMENU_DESCONHECIDO
+    Entrada desconhecida.
+    \var ComandoMenu::CMENU_CARREGAR
+    Carregar arquivo.
+    \var ComandoMenu::CMENU_SAIR
+    Sair da interface ou voltar de um submenu.
+    \var ComandoMenu::CMENU_ESPECIFICAR
+    Especificar entrada.
+    \var ComandoMenu::CMENU_GALAXIAP
+    Arquivo galáxia pequena.
+    \var ComandoMenu::CMENU_GALAXIAM
+    Arquivo galáxia média.
+    \var ComandoMenu::CMENU_GALAXIAG
+    Arquivo galáxia grande.
+    \var ComandoMenu::CMENU_GRAU
+    Entrar no submenu Determinar Grau.
+    \var ComandoMenu::CMENU_CICLOS
+    Entrar no submenu Determinar Ciclos.
+    \var ComandoMenu::CMENU_CAMINHOS
+    Entrar no submenu Determinar Caminho.
+    \var ComandoMenu::CMENU_CONECTADOS
+    Entrar no submenu Componentes Conectados.
+    \var ComandoMenu::CMENU_PLANET_RANK
+    Entrar no submenu Planet Rank.
+    \var ComandoMenu::CMENU_DESCARREGAR
+    Descarregar o grafo atual.
+    \var ComandoMenu::CMENU_IMPRIMIR_MAT_ADJ
+    Imprimir matriz de adjacências.
+    \var ComandoMenu::CMENU_IMPRIMIR_MAT_INC
+    Imprimir matriz de incidência.
+    \var ComandoMenu::CMENU_TODOS
+    Valor TODOS, combinável com outros itens.
+    \var ComandoMenu::CMENU_GRAU_INDEGREE
+    Grau de entrada.
+    \var ComandoMenu::CMENU_GRAU_OUTDEGREE
+    Grau de saída.
+    \var ComandoMenu::CMENU_GRAU_INCIDENCIA
+    Grau de incidência.
+    \var ComandoMenu::CMENU_VERIF_FCONECTADOS
+    Determinar componentes fortemente conectados.
+    \var ComandoMenu::CMENU_IMPRIMIR_PARESF
+    Imprimir arestas fortemente conectadas.
+    \var ComandoMenu::CMENU_PR_IMPRIMIR_MAT_PROBPLANETA
+    Imprimir matriz de probabilidade do planeta.
+    \var ComandoMenu::CMENU_PR_IMPRIMIR_MAT_PROBALEATORIA
+    Imprimir matriz de probabilidade aleatória.
+    \var ComandoMenu::CMENU_PR_IMPRIMIR_MAT_PLANETRANK
+    Imprimir matriz Planet Rank.
+
+    \fn int MenuInicial();
+    \brief Apresenta as opções Carregar Grafo e Sair.
+
+    \fn int MenuCarregar();
+    \brief Apresenta as opções Carregar Arquivo específico, ou algum dos outros três arquivos de teste.
+    \return Retorna o valor da opção selecionada.
+    \fn int MenuGrafo();
+    \brief Apresenta as opções de interação com um grafo carregado.
+    \return Retorna o valor da opção selecionada.
+    \fn int MenuGrau();
+    \brief Apresenta as opções disponíveis para avaliação do grau de vértices do grafo.
+    \return Retorna uma combinação de valores bitwise da enumeração ComandoMenu.
+    \fn int MenuConexao();
+    \brief Apresenta as opções de diálogo relacionadas às conexões entre vértices.
+    \return Retorna o valor da opção selecionada.
+    \fn int MenuRank();
+    \brief Apresenta os tipos de informação do escopo do cálculo Planet Rank.
+    \return Retorna o valor da opção selecionada.
+
+    \fn void ResolverCarregar(int comando);
+    \brief Lê o comando e chama a função base de acordo.
+    \fn void ResolverGrafo(int comando);
+    \brief Lê o comando e chama a função base de acordo.
+    \fn void ResolverGrau(int comando);
+    \brief Lê o comando e chama a função base de acordo.
+    \fn void ResolverConexao(int comando);
+    \brief Lê o comando e chama a função base de acordo.
+    \fn void ResolverCiclo(int comando);
+    \brief Lê o comando e chama a função base de acordo.
+    \fn void ResolverCaminho(int comando);
+    \brief Lê o comando e chama a função base de acordo.
+    \fn void ResolverRank(int comando);
+    \brief Lê o comando e chama a função base de acordo.
+*/
+
 enum ComandoMenu
 {
     CMENU_DESCONHECIDO = 0,

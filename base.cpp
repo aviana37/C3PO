@@ -1,5 +1,24 @@
 #include "base.h"
 
+/*André Viana Sena de Souza - 25037
+**Projeto e Análise de Algoritmos - ECO027
+**Projeto #3 - C3PO - 10/11/2014
+**Arquivo: base.cpp
+**Descrição: Implementação dos métodos definidos em base.h.
+*/
+
+/** \file base.cpp
+    \brief Implementações de base.h e seus recursos estáticos.
+
+    \var _grafo
+    Ponteiro interno de um objeto Grafo, para uso dos métodos da base.
+    \var _rank
+    Ponteiro para um objeto MatrizesPlanetRank.
+    \var _percursoAtual
+    Aponta para o último percurso realizado. Atualizado pelos métodos Grafo_FazerPercursoProfundidade()
+     e Grafo_FazerPercursoLargura().
+*/
+
 static Grafo* _grafo=NULL;
 static MatrizesPlanetRank* _rank=NULL;
 static TipoPercurso _percursoAtual=PERCURSO_NENHUM;

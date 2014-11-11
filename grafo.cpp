@@ -1,5 +1,16 @@
 #include "grafo.h"
 
+/*André Viana Sena de Souza - 25037
+**Projeto e Análise de Algoritmos - ECO027
+**Projeto #3 - C3PO - 10/11/2014
+**Arquivo: grafo.cpp
+**Descrição: Implementação dos métodos definidos em grafo.h.
+*/
+
+/** \file grafo.cpp
+    \brief Implementações de grafo.h.
+*/
+
 bool Grafo::Aresta::operator==(Grafo::Aresta &outro)
 {
     if(a == outro.a)
@@ -245,7 +256,6 @@ void Grafo::PercursoLargura(int raiz)
         vertices[raiz].cor = Vertice::PRETO;
         delete fila;
     }
-
 }
 
 Grafo* CarregarArquivo(const char* arquivo)
